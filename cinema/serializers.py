@@ -3,7 +3,15 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from cinema.models import Genre, Actor, CinemaHall, Movie, MovieSession, Ticket, Order
+from cinema.models import (
+    Genre,
+    Actor,
+    CinemaHall,
+    Movie,
+    MovieSession,
+    Ticket,
+    Order
+)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -63,6 +71,8 @@ class MovieSessionListSerializer(MovieSessionSerializer):
         source="cinema_hall.capacity", read_only=True
     )
 
+    tickets_available = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = MovieSession
         fields = (
@@ -71,16 +81,29 @@ class MovieSessionListSerializer(MovieSessionSerializer):
             "movie_title",
             "cinema_hall_name",
             "cinema_hall_capacity",
+            "tickets_available",
         )
+
+
+class TicketSeatRowSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ticket
+        fields = ("row", "seat")
+        read_only_fields = fields
 
 
 class MovieSessionDetailSerializer(MovieSessionSerializer):
     movie = MovieListSerializer(many=False, read_only=True)
     cinema_hall = CinemaHallSerializer(many=False, read_only=True)
 
+    taken_places = TicketSeatRowSerializer(
+        many=True, read_only=False, source="tickets"
+    )
+
     class Meta:
         model = MovieSession
-        fields = ("id", "show_time", "movie", "cinema_hall")
+        fields = ("id", "show_time", "movie", "cinema_hall", "taken_places")
 
 
 class TicketSerializer(serializers.ModelSerializer):
@@ -99,30 +122,6 @@ class TicketSerializer(serializers.ModelSerializer):
             serializers.ValidationError
         )
         return data
-        # for ticket_attr_value, ticket_attr_name, cinema_hall_attr_name in [
-        #     (attrs["row"], "row", "rows"),
-        #     (attrs["seat"], "seat", "seats_in_row"),
-        # ]:
-        #     count_attrs = getattr(
-        #         attrs["movie_session"].cinema_hall, cinema_hall_attr_name
-        #     )
-        #     if not (1 <= ticket_attr_value <= count_attrs):
-        #         raise serializers.ValidationError(
-        #             {
-        #                 ticket_attr_name: f"{ticket_attr_name} "
-        #                 f"number must be in available range: "
-        #                 f"(1, {cinema_hall_attr_name}): "
-        #                 f"(1, {count_attrs})"
-        #             }
-        #         )
-
-
-
-# class UserSerializer(serializers.ModelSerializer):
-#
-#     class Meta:
-#         model = get_user_model()
-#         fields = "__all__"
 
 
 class OrderSerializer(serializers.ModelSerializer):
