@@ -1,7 +1,6 @@
-from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
+
 
 from cinema.models import (
     Genre,
@@ -125,7 +124,6 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    # user = UserSerializer(many=False, read_only=True)
     tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
 
     class Meta:

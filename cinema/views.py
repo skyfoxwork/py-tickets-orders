@@ -60,7 +60,6 @@ class MovieViewSet(viewsets.ModelViewSet):
             queryset = Movie.objects.filter(genres__id__in=genres_ids)
 
         if title:
-            # title_ids = [int(str_id) for str_id in title.split(",")]
             queryset = Movie.objects.filter(title__icontains=title)
 
         if self.action == ("list", "retrieve"):
@@ -70,7 +69,6 @@ class MovieViewSet(viewsets.ModelViewSet):
 
 
 class MovieSessionViewSet(viewsets.ModelViewSet):
-    # queryset = MovieSession.objects.all()
     serializer_class = MovieSessionSerializer
     queryset = (
         MovieSession.objects
@@ -108,16 +106,6 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
 
         if self.action == ("list", "retrieve"):
             queryset = MovieSession.objects.prefetch_related("actors")
-
-        # if self.action == "list":
-        #     print("third")
-        #     queryset = MovieSession.objects.select_related("movie").annotate(
-        #         tickets_avalible=Count("tickets")
-        #     )
-        #
-        # if self.action == "retrieve":
-        #     print("forth")
-        #     queryset = MovieSession.objects.prefetch_related("actors")
 
         return queryset.distinct()
 
